@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:szef_kuchni_v2/models/recipe_name.dart';
+import 'package:szef_kuchni_v2/services/database_service.dart';
 
 class AllRecipesView extends StatefulWidget{
   const AllRecipesView({super.key});
@@ -8,6 +10,22 @@ class AllRecipesView extends StatefulWidget{
 }
 
 class _AllRecipesViewState extends State<AllRecipesView> {
+  final DatabaseService databaseService = DatabaseService();
+  List<RecipeName> recipeNames = [];
+
+  @override
+  void initState() {
+    super.initState();
+    loadRecipes();
+  }
+
+  Future<void> loadRecipes() async {
+    final recipes = await databaseService.getRecipeNames();
+    setState(() {
+      recipeNames = recipes; // Use different variable name
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     var theme = Theme.of(context);
@@ -18,21 +36,19 @@ class _AllRecipesViewState extends State<AllRecipesView> {
     
     return Scaffold(
       backgroundColor: theme.colorScheme.inverseSurface,
-      body: Center(
-        child: Column(
-          children: <Widget>[
-            const SizedBox(height: 10.0,),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                "Wyszukaj przepis po nazwie",
-                style: style,
-                textAlign: TextAlign.center,
-              ),
-            )
-          ],
+      body: ListView.separated(
+        shrinkWrap: true,
+        physics: const ClampingScrollPhysics(),
+        itemBuilder: (context, index) {
+          return Container(
+            padding: const EdgeInsets.all(15),
+            child: Text(recipeNames[index].name),
+          );
+        },
+         separatorBuilder: (context, index) => const Divider(height: 0.5, color: Colors.amber,),
+          // ignore: unnecessary_null_comparison
+          itemCount: recipeNames==null?0:recipeNames.length
         ),
-      ),
     );
   }
 }
